@@ -95,6 +95,21 @@
       register: response
       when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
 
+    - name: Send list of actions as comment
+      uri:
+        url: "{{ yt_url }}/api/issues/{{ new_ticket_id }}/comments"
+        method: POST
+        validate_certs: no
+        body: "{{ {'text': actions + '\n @comment'} | to_json }}"
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+          Authorization: "Bearer {{ yt_api_token }}"
+        status_code: [200]
+      register: response
+      when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
+
     - name: Set status of YT ticket to 'Open'
       uri:
         url: "{{ yt_url }}/api/issues/{{ ticket }}"
@@ -231,18 +246,3 @@
           }
         status_code: 200
       when: api_target == 'YT' and new_ticket_id is defined and subject is defined
-
-    - name: Send list of actions as comment
-      uri:
-        url: "{{ yt_url }}/api/issues/{{ new_ticket_id }}/comments"
-        method: POST
-        validate_certs: no
-        body: "{{ {'text': actions + '\n @comment'} | to_json }}"
-        body_format: json
-        headers:
-          Content-Type: "application/json"
-          Accept: "application/json"
-          Authorization: "Bearer {{ yt_api_token }}"
-        status_code: [200]
-      register: response
-      when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
