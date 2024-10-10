@@ -237,7 +237,7 @@
         url: "{{ yt_url }}/api/issues/{{ new_ticket_id }}/comments"
         method: POST
         validate_certs: no
-        body: "{{ {'text': action + '\n @comment'} | to_json }}"
+        body: "{{ {'text': actions + '\n @comment'} | to_json }}"
         body_format: json
         headers:
           Content-Type: "application/json"
