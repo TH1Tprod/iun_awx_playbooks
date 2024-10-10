@@ -245,4 +245,4 @@
           Authorization: "Bearer {{ yt_api_token }}"
         status_code: [200]
       register: response
-      when: (api_target == 'YT' and (subject is defined or subject | trim !== ""))
+      when: (api_target == 'YT' and (subject is defined or subject | trim != ""))
