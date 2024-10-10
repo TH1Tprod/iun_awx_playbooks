@@ -34,8 +34,3 @@
         msg:
           - "email_subject": "{{ email_subject | default('Subject is not defined') }}"
           - "notification": "{{ notification | default('Notification is not defined') }}"
-
-    - name: Check if action variable is defined
-      debug:
-        msg:
-          - "action": "{{ action | default('Action is not defined') }}"
