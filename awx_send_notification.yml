@@ -108,7 +108,7 @@
         headers:
           Content-Type: "application/json"
           Accept: "application/json"
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
         status_code: [200]
       register: response
       when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
@@ -127,7 +127,7 @@
                 name: "Open"
         headers:
           Content-Type: "application/json"
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
         status_code: [200]
       when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
 
@@ -137,12 +137,21 @@
         method: GET
         validate_certs: no
         headers:
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
           Accept: "application/json"
         return_content: yes
         status_code: 200
       register: issue_details
       when: api_target == 'YT' and ticket is defined and subject is defined
+
+    - name: Extract parent ticket priority
+      set_fact:
+        parent_priority: >-
+          {{ issue_details.json.customFields
+            | selectattr('name','equalto','Priority')
+            | map(attribute='value')
+            | first }}
+      when: api_target == 'YT' and issue_details.json.customFields is defined
 
     - name: Extract tags from summary
       set_fact:
@@ -156,7 +165,7 @@
         validate_certs: no
         body_format: json
         headers:
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
           Content-Type: "application/json"
           Accept: "application/json"
         body: >-
@@ -171,7 +180,7 @@
                 "name": "Priority",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "name": "Low"
+                  "name": "{{ parent_priority.id }}"
                 }
               },
               {
@@ -214,7 +223,7 @@
         method: GET
         validate_certs: no
         headers:
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
           Accept: "application/json"
         return_content: yes
         status_code: 200
@@ -233,7 +242,7 @@
         validate_certs: no
         body_format: json
         headers:
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
           Content-Type: "application/json"
           Accept: "application/json"
         body: >-
@@ -263,7 +272,7 @@
         headers:
           Content-Type: "application/json"
           Accept: "application/json"
-          Authorization: "Bearer{{ yt_api_token }}"
+          Authorization: "Bearer {{ yt_api_token }}"
         status_code: [200]
       register: response
       when: api_target == 'YT' and subject is defined and actions is defined
