@@ -182,7 +182,7 @@
                 "name": "Priority",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "name": "{{ issue_details.json.customFields | selectattr('name','equalto','Priority') | map(attribute='value.id') | first }}"
+                  "id": "{{ issue_details.json.customFields | selectattr('name','equalto','Priority') | map(attribute='value.id') | first }}"
                 }
               },
               {
