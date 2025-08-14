@@ -180,7 +180,7 @@
                 "name": "Priority",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "name": "{{ parent_priority.name }}"
+                  "name": "{{ parent_priority }}"
                 }
               },
               {
