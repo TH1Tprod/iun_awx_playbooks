@@ -131,6 +131,17 @@
         status_code: [200]
       when: (api_target == 'YT' and (subject is undefined or subject | trim == ""))
 
+    - name: Debug parent priority name & id
+      debug:
+        msg:
+          - "Priority.name = {{ issue_details.json.customFields
+                                 | selectattr('name','equalto','Priority')
+                                 | map(attribute='value.name') | first }}"
+          - "Priority.id   = {{ issue_details.json.customFields
+                                 | selectattr('name','equalto','Priority')
+                                 | map(attribute='value.id') | first }}"
+      when: api_target == 'YT' and issue_details is defined
+
     - name: Fetch update TT details
       uri:
         url: "{{ yt_url }}/api/issues/{{ ticket }}?fields=id,summary,customFields(id,name,value(id,name,$type))"
@@ -171,7 +182,7 @@
                 "name": "Priority",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "name": "{{ issue_details.json.customFields | selectattr('name','equalto','Priority') | map(attribute='value.name') | first }}"
+                  "name": "{{ issue_details.json.customFields | selectattr('name','equalto','Priority') | map(attribute='value.id') | first }}"
                 }
               },
               {
