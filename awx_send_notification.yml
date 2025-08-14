@@ -144,15 +144,6 @@
       register: issue_details
       when: api_target == 'YT' and ticket is defined and subject is defined
 
-    - name: Extract parent ticket priority
-      set_fact:
-        parent_priority: >-
-          {{ issue_details.json.customFields
-            | selectattr('name','equalto','Priority')
-            | map(attribute='value')
-            | first }}
-      when: api_target == 'YT' and issue_details.json.customFields is defined
-
     - name: Extract tags from summary
       set_fact:
         tags: "{{ issue_details.json.summary | regex_findall('\\[([^\\]]+)\\]') | select('search', '^(?!update$)', 'i') | map('regex_replace', '^(.+)$', '[\\1]') | join(' ') }}"
@@ -180,7 +171,7 @@
                 "name": "Priority",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "name": "{{ parent_priority }}"
+                  "name": "{{ issue_details.json.customFields | selectattr('name','equalto','Priority') | map(attribute='value') | first }}"
                 }
               },
               {
