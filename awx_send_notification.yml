@@ -212,6 +212,13 @@
                 "value": {
                   "id": "{{ issue_details.json.customFields | selectattr('name', 'equalto', 'Support Group') | map(attribute='value.id') | first }}"
                 }
+              },
+              {
+                "name": "Area",
+                "$type": "SingleEnumIssueCustomField",
+                "value": {
+                  "id": "42-1631"
+                }
               }
             ]
           }
