@@ -185,7 +185,7 @@
                 "name": "Review",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
-                  "id": "42-1726"
+                  "id": "{{ review_field_id }}"
                 }
               },
               {
