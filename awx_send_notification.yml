@@ -175,17 +175,17 @@
                 }
               },
               {
-                "name": "Status",
-                "$type": "StateIssueCustomField",
-                "value": {
-                  "name": "{{ status | default('Stalled') }}"
-                }
-              },
-              {
                 "name": "Review",
                 "$type": "SingleEnumIssueCustomField",
                 "value": {
                   "id": "{{ review_field_id }}"
+                }
+              },
+              {
+                "name": "Status",
+                "$type": "StateIssueCustomField",
+                "value": {
+                  "name": "{{ status | default('Stalled') }}"
                 }
               },
               {
