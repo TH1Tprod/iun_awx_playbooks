@@ -289,4 +289,3 @@
           not_found
           {% endif %}
       run_once: true
-      delegate_to: localhost
