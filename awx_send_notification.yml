@@ -5,6 +5,18 @@
   vars:
 
   tasks:
+    - name: Collect notification templates (notification, notification_1, ...)
+      set_fact:
+        _notification_templates: >-
+          {{
+            vars
+            | dict2items
+            | selectattr('key', 'match', '^notification(_[0-9])?$')
+            | sort(attribute='key')
+            | map(attribute='value')
+            | list
+          }}
+
     - name: Check if notification should be skipped
       fail:
         msg: "skip_notification=1, skipping"
@@ -49,20 +61,41 @@
         msg: "Current lvl: {{ lvl }}"
       when: lvl is defined
 
-    - name: Append data from variables to notification
+    - name: Set legacy cmd_output if not defined
       set_fact:
-        updated_notification: "{{ notification |
-          replace('{{ cmd_output }}', lvl.cmd_output | default('')) |
-          replace('{{ aux_cmd_output }}', lvl.aux_cmd_output | default('')) |
-          replace('{{ mr_from }}', mr_from | default('')) |
-          replace('{{ mr_to }}', mr_to | default('')) |
-          replace('\n', ' \n ') }}"
-      when: lvl.cmd_output is defined or lvl.aux_cmd_output is defined or mr_from is defined or mr_to is defined
+        cmd_output: >-
+          {{
+            notification_levels
+            | default({})
+            | dict2items
+            | last
+            | default({})
+            | map(attribute='value.cmd_output', attribute2='value.stdout')
+            | first
+            | default('')
+          }}
+      when: cmd_output is not defined
+
+    - name: Process notifications
+      loop: "{{ _notification_templates }}"
+      loop_control:
+        loop_var: _notification
+      block:
+
+        - name: Append data from variables to notification
+          set_fact:
+            updated_notification: "{{ _notification |
+              replace('{{ cmd_output }}', lvl.cmd_output | default(cmd_output | default(''))) |
+              replace('{{ aux_cmd_output }}', lvl.aux_cmd_output | default('')) |
+              replace('{{ mr_from }}', mr_from | default('')) |
+              replace('{{ mr_to }}', mr_to | default('')) |
+              replace('\n', ' \n ') }}"
+          when: lvl is defined and (lvl.cmd_output is defined or lvl.aux_cmd_output is defined or mr_from is defined or mr_to is defined)
 
     - name: Set updated_notification when cmd_output/aux_cmd_output are not defined
       set_fact:
-        updated_notification: "{{ notification | replace('\n', ' \n ') }}"
-      when: lvl.cmd_output is undefined and lvl.aux_cmd_output is undefined
+        updated_notification: "{{ _notification | replace('\n', ' \n ') }}"
+      when: lvl is not defined or (lvl.cmd_output is undefined and lvl.aux_cmd_output is undefined)
 
     - name: Send reply to the ticket in RT
       uri:
