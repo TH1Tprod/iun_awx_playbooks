@@ -5,13 +5,13 @@
   vars:
 
   tasks:
-    - name: Collect notification templates (notification, notification_1, ...)
+    - name: Collect notification templates
       set_fact:
         _notification_templates: >-
           {{
             vars
             | dict2items
-            | selectattr('key', 'match', '^notification(_[0-9])?$')
+            | selectattr('key', 'match', '^notification(_[0-9]+)?$')
             | sort(attribute='key')
             | map(attribute='value')
             | list
@@ -70,27 +70,26 @@
             | dict2items
             | last
             | default({})
-            | map(attribute='value.cmd_output', attribute2='value.stdout')
+            | map(attribute='value.stdout')
             | first
             | default('')
           }}
       when: cmd_output is not defined
 
-    - name: Process notifications
+    - name: Build updated_notifications
+      set_fact:
+        updated_notifications: >-
+          {{
+            updated_notifications | default([]) + [
+              item
+              | replace('{{ cmd_output }}', lvl.cmd_output | default(cmd_output | default('')))
+              | replace('{{ aux_cmd_output }}', lvl.aux_cmd_output | default(''))
+              | replace('{{ mr_from }}', mr_from | default(''))
+              | replace('{{ mr_to }}', mr_to | default(''))
+              | replace('\n', ' \n ')
+            ]
+          }}
       loop: "{{ _notification_templates }}"
-      loop_control:
-        loop_var: _notification
-      block:
-
-        - name: Append data from variables to notification
-          set_fact:
-            updated_notification: "{{ _notification |
-              replace('{{ cmd_output }}', lvl.cmd_output | default(cmd_output | default(''))) |
-              replace('{{ aux_cmd_output }}', lvl.aux_cmd_output | default('')) |
-              replace('{{ mr_from }}', mr_from | default('')) |
-              replace('{{ mr_to }}', mr_to | default('')) |
-              replace('\n', ' \n ') }}"
-          when: lvl is defined and (lvl.cmd_output is defined or lvl.aux_cmd_output is defined or mr_from is defined or mr_to is defined)
 
     - name: Set updated_notification when cmd_output/aux_cmd_output are not defined
       set_fact:
