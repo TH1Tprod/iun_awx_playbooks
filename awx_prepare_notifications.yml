@@ -1,0 +1,22 @@
+- name: Prepare notifications from templates
+  host: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Skip it if the notification is already set
+      meta: end_play
+      when: notification is defined
+
+    - name: Fail if notification_key isn't provided
+      fail:
+        msg: "'notification_key' variable is not defined or empty"
+      when: notification_key is undefined
+
+    - name: Fail if notification key not found
+      fail:
+        msg: "notification '{{ notification_key }}' not found in notifications"
+      when: notifications[notification_key] is not defined
+
+    - name: Set final notification
+      set_fact:
+        notification: "{{ notifications[notification_key] }}"
